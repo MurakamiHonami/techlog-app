@@ -1,8 +1,8 @@
 class PostsController < ApplicationController
-  before_action :authenticate_user!, only: [:new, :create] # ログインしているかどうかを判断
+  before_action :authenticate_user!, only: [:new, :create]
 
   def index
-    @posts = Post.limit(10).order(created_at: :desc) # 最新の100件を取得して表示
+    @posts = Post.limit(10).order(created_at: :desc) # 作成日時が新しい順に10件
   end
 
   def new
@@ -15,7 +15,7 @@ class PostsController < ApplicationController
 
     if @post.save
       flash[:notice] = '投稿しました' # 成功時のフラッシュメッセージ
-      redirect_to posts_path # 一時的にトップページへリダイレクト(後に修正)
+      redirect_to posts_path
     else
       flash[:alert] = '投稿に失敗しました' # 失敗時のフラッシュメッセージ
       render :new # 投稿画面を再表示
@@ -23,10 +23,17 @@ class PostsController < ApplicationController
   end
 
   def show
-    @post = Post.find_by(id: params[:id]) # URLの:id部分を取得してPostモデルから該当するレコードを探す
+    @post = Post.find_by(id: params[:id])
   end
 
   def destroy
+    post = Post.find_by(id: params[:id])
+
+    if post.user == current_user
+      post.destroy
+      flash[:notice] = '投稿が削除されました'
+    end
+    redirect_to posts_path
   end
 
   private
